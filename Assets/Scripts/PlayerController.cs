@@ -2,15 +2,12 @@
 
 public class PlayerController : MonoBehaviour
 {
-    public float rotationSpeed = 1f; // Sensitivity of rotation
-    public float smoothTime = 0.5f;    // Smoothing time
-
-    private Vector3 lastTouchPosition;
-    private Vector3 touchDelta;
-    private Vector3 currentVelocity;
+    public float rotationSpeed = 0.05f;  // Lower = slower
+    public float smoothTime = 0.2f;      // Smoothing feel
 
     private Vector3 currentRotation;
     private Vector3 targetRotation;
+    private Vector3 rotationVelocity;
 
     void Start()
     {
@@ -32,21 +29,37 @@ public class PlayerController : MonoBehaviour
 
             if (touch.phase == TouchPhase.Moved)
             {
-                touchDelta = touch.deltaPosition;
+                Vector2 delta = touch.deltaPosition;
 
-                targetRotation.y += touchDelta.x * rotationSpeed;
-                targetRotation.x -= touchDelta.y * rotationSpeed;
-            }
-            else
-            {
-                // No swipe movement — stop changing rotation
-                touchDelta = Vector2.zero;
+                // Optional clamp to avoid large sudden swipes
+                delta = Vector2.ClampMagnitude(delta, 20f);
+
+                // Apply only small rotation increments
+                targetRotation.y += delta.x * rotationSpeed;
+                targetRotation.x -= delta.y * rotationSpeed;
             }
         }
+
+#if UNITY_EDITOR
+        HandleMouseInput(); // Editor drag test
+#endif
     }
-      void SmoothRotate()
+
+    void HandleMouseInput()
     {
-        currentRotation = Vector3.SmoothDamp(currentRotation, targetRotation, ref currentVelocity, smoothTime);
+        if (Input.GetMouseButton(0))
+        {
+            float mouseX = Input.GetAxis("Mouse X");
+            float mouseY = Input.GetAxis("Mouse Y");
+
+            targetRotation.y += mouseX * rotationSpeed * 10f * Time.deltaTime;
+            targetRotation.x -= mouseY * rotationSpeed * 10f * Time.deltaTime;
+        }
+    }
+
+    void SmoothRotate()
+    {
+        currentRotation = Vector3.SmoothDamp(currentRotation, targetRotation, ref rotationVelocity, smoothTime);
         transform.localEulerAngles = currentRotation;
     }
 }
