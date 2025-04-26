@@ -3,6 +3,7 @@ using UnityEngine;
 public class CubeFace : MonoBehaviour
 {
     public Color faceColor;  // Each face has its own color
+    public int ID; //Each face has an ID
 
     void Start()
     {
@@ -17,5 +18,9 @@ public class CubeFace : MonoBehaviour
         {
             Debug.LogError("No Renderer found on this face.");
         }
+    }
+    public bool CompareID(int id) 
+    {
+        return id == ID;    
     }
 }
